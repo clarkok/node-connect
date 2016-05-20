@@ -19,7 +19,9 @@ if (process.argv.length > 2) {
 console.log('bind to iface', iface);
 
 packet.listen(iface, function (data) {
-    console.log('captured packet of length', data.length);
+    console.log('\ncaptured packet of length', data.length);
+    showPacket(data);
+    rl.prompt(true);
 });
 
 rl.setPrompt(iface + '> ');
@@ -35,7 +37,10 @@ rl.on('line', (line) => {
             packet.send(iface, dst_mac, content);
             break;
         case 'file':
-            sendFile(content);
+            let time = Date.now();
+            let size = sendFile(content);
+            time = Date.now() - time;
+            console.log('sent', size, 'bytes in', time, 'ms (', size / 1024 / time, 'MB/s)');
             break;
         case 'exit':
             process.exit();
@@ -52,8 +57,22 @@ function sendFile(path) {
     let content = fs.readFileSync(path);
     let offset = 0;
     while (offset < content.length) {
-        console.log('sending from', offset);
         packet.send(iface, dst_mac, content.slice(offset, 1024));
         offset += 1024;
     }
+    return content.length;
+}
+
+function showPacket(data) {
+    let string = data.toString();
+    let output = '';
+    for (let i = 0; i < string.length; ++i) {
+        if (string.charCodeAt(i) > 31 && string.charCodeAt(i) < 127) {
+            output += string.charAt(i);
+        }
+        else {
+            output += '.';
+        }
+    }
+    console.log(output);
 }
