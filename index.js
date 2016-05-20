@@ -2,6 +2,7 @@
 
 let packet = require('node-packet');
 let readline = require('readline');
+let fs = require('fs');
 
 const rl = readline.createInterface({
     input : process.stdin,
@@ -28,10 +29,13 @@ rl.on('line', (line) => {
     line = line.trim();
     let split = line.split(' ', 1);
     let command = split[0];
-    let content = split[1] + '';
+    let content = line.slice(command.length).trim();
     switch (command) {
         case 'echo':
             packet.send(iface, content);
+            break;
+        case 'file':
+            sendFile(content);
             break;
         case 'exit':
             process.exit();
@@ -43,3 +47,12 @@ rl.on('line', (line) => {
     rl.prompt();
 });
 
+function sendFile(path) {
+    console.log('sending:', path);
+    let content = fs.readFileSync(path);
+    let offset = 0;
+    while (offset < content.length) {
+        packet.send(iface, new Buffer(content, offset, 1024));
+        offset += 1024;
+    }
+}
