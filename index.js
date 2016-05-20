@@ -57,7 +57,7 @@ function sendFile(path) {
     let content = fs.readFileSync(path);
     let offset = 0;
     while (offset < content.length) {
-        packet.send(iface, dst_mac, new Buffer(content, offset, 1024));
+        packet.send(iface, dst_mac, content.slice(offset, offset + 1024));
         offset += 1024;
     }
     return content.length;
