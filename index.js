@@ -25,9 +25,13 @@ rl.setPrompt(iface + '> ');
 rl.prompt();
 
 rl.on('line', (line) => {
-    switch (line.trim()) {
+    line = line.trim();
+    let split = line.split(' ', 1);
+    let command = split[0];
+    let content = split[1] + '';
+    switch (command) {
         case 'echo':
-            rl.question('What to echo?', (answer) => packet.send(iface, dst_mac, line));
+            packet.send(iface, content);
             break;
         case 'exit':
             process.exit();
